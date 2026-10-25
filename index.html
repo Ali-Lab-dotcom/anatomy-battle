@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anatomy Battle 2.0</title>
+<style>
+:root{--bg:#0b1220;--panel:#172338;--card:#24344c;--line:#354862;--mint:#73ead0;--text:#f3f6ff;--muted:#a8b6ce}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:radial-gradient(ellipse at top,#1d3548,#0b1220 70%);font-family:Arial,sans-serif;color:var(--text)}
+main{max-width:850px;margin:auto}
+header{text-align:center;padding:25px 0}
+.logo{font-size:44px}
+h1{font-size:clamp(30px,6vw,46px);margin:8px}
+p{line-height:1.6}
+.muted{color:var(--muted)}
+.tag{display:inline-block;background:#213b4b;color:var(--mint);padding:8px 12px;border-radius:20px;font-size:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;margin:16px 0}
+h2{line-height:1.4}
+label{display:block;color:var(--muted);font-size:13px;margin:12px 0 7px}
+select{width:100%;padding:13px;border-radius:10px;background:var(--card);color:white;border:1px solid var(--line);font-size:15px}
+.settings{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+button{cursor:pointer;border:0;border-radius:10px;padding:13px 16px;font-weight:bold;font-size:14px}
+button:hover{filter:brightness(1.12)}
+.primary{background:var(--mint);color:#10252a}
+.secondary{background:var(--card);border:1px solid var(--line);color:white}
+button:disabled{opacity:.5;cursor:default}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0}
+.stat{text-align:center;background:var(--card);border-radius:12px;padding:13px 5px;color:var(--muted);font-size:12px}
+.stat strong{display:block;font-size:24px;color:var(--mint);margin-top:6px}
+.progress{height:8px;background:var(--card);border-radius:10px;overflow:hidden;margin:16px 0}
+#bar{height:100%;width:0;background:var(--mint);transition:width .2s}
+.meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+#question{font-size:clamp(20px,4vw,27px);line-height:1.45}
+.option{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);color:white;border:1px solid var(--line);margin:10px 0;padding:14px;font-size:15px;line-height:1.5}
+.letter{display:grid;place-items:center;min-width:29px;height:29px;border-radius:8px;background:#354862;color:var(--mint)}
+.option.correct{border-color:var(--mint);background:#17423c}
+.option.wrong{border-color:#ff8c9a;background:#482832}
+#feedback{line-height:1.7;margin-top:18px}
+.fact{background:#1b3446;border-left:3px solid var(--mint);padding:12px;border-radius:6px;margin-top:10px}
+.actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:20px}
+.hidden{display:none!important}
+.review{padding:14px 0;border-bottom:1px solid var(--line);line-height:1.6}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+@media(max-width:560px){body{padding:10px}.panel{padding:16px}.settings{grid-template-columns:1fr}.stat strong{font-size:21px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="logo">🧠</div>
+<span class="tag">HUMAN BODY • KNOWLEDGE • CHALLENGE</span>
+<h1>Anatomy Battle</h1>
+<p class="muted" id="subtitle"></p>
+</header>
+
+<section class="panel" id="setup">
+<h2 id="setupTitle"></h2>
+<div class="settings">
+<div><label id="langLabel" for="lang"></label>
+<select id="lang">
+<option value="ru">🇷🇺 Русский</option>
+<option value="kk">🇰🇿 Қазақша</option>
+<option value="en">🇬🇧 English</option>
+</select></div>
+<div><label id="topicLabel" for="topic"></label><select id="topic"></select></div>
+<div><label id="levelLabel" for="level"></label><select id="level"></select></div>
+</div>
+<p class="muted" id="setupInfo"></p>
+<button class="primary" id="startBtn" onclick="startGame()"></button>
+</section>
+
+<div id="game" class="hidden">
+<div class="stats">
+<div class="stat"><span id="scoreLabel"></span><strong id="score">0</strong></div>
+<div class="stat"><span id="progressLabel"></span><strong id="count">0/0</strong></div>
+<div class="stat"><span id="streakLabel"></span><strong id="streak">0</strong></div>
+</div>
+<section class="panel">
+<div class="progress"><div id="bar"></div></div>
+<div class="meta"><span id="category"></span><span id="difficulty"></span></div>
+<h2 id="question"></h2>
+<div id="options"></div>
+<div id="feedback" aria-live="polite"></div>
+<div class="actions">
+<button class="secondary" id="quitBtn" onclick="backToSetup()"></button>
+<button class="primary" id="nextBtn" onclick="nextQuestion()" disabled></button>
+</div>
+</section>
+</div>
+
+<section class="panel hidden" id="results">
+<h2 id="resultTitle"></h2>
+<div class="stats">
+<div class="stat"><span id="correctLabel"></span><strong id="correctTotal"></strong></div>
+<div class="stat"><span id="accuracyLabel"></span><strong id="accuracy"></strong></div>
+<div class="stat"><span id="totalLabel"></span><strong id="totalScore"></strong></div>
+</div>
+<h3 id="resultMessage"></h3>
+<p class="muted" id="resultDetail"></p>
+<h3 id="reviewTitle"></h3>
+<div id="review"></div>
+<div class="actions">
+<button class="secondary" id="homeBtn" onclick="backToSetup()"></button>
+<button class="primary" id="againBtn" onclick="startGame()"></button>
+</div>
+</section>
+<footer id="footer"></footer>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
